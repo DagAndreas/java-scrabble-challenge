@@ -70,10 +70,17 @@ public class Scrabble {
     public boolean CheckFrontbackPair(String word){
         char first_c = word.charAt(0);
         if (first_c == '{'){
-            char last_c = word.charAt(word.length()-1);
-            char third_c = word.charAt(2);
+            char third_char = word.charAt(2);
+            if (third_char == '}'){
+                return false;
+            }
+            char last_char = word.charAt(word.length()-1);
+            char last_char_pair = word.charAt(word.length()-3);
 
-            if (last_c == '}' && )
+            if (last_char == '}' && last_char_pair != '{'){
+                return true;
+            }
+            return false;
         }
 
      return false;
