@@ -10,6 +10,7 @@ public class Scrabble {
 
     public Scrabble(String word) {
         this.word = word;
+        System.out.println(word);
     }
 
 
@@ -29,8 +30,8 @@ public class Scrabble {
             }
         }
         System.out.println("conv list = " +convertedList);
-
         word = word.toUpperCase();
+        System.out.println(word);
         // check for legal characters. All legal characters are:
         String legalCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ{}[]";
         for (int i = 0; i < word.length(); i++) {
@@ -39,6 +40,11 @@ public class Scrabble {
                 System.out.println("Found illegal character" + c );
                 return 0;
             }
+        }
+
+        // check for single characters
+        if (word.length() == 1){
+            return getValue(word);
         }
 
 
