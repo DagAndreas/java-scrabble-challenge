@@ -12,20 +12,6 @@ public class Scrabble {
         this.word = word;
     }
 
-//    public int score() {
-//        int score = 0;
-//
-//        for(int i = 0; i < word.length(); i++){
-//            char c = word.charAt(i);
-//            String s = String.valueOf(c);
-//            System.out.println(s.toUpperCase());
-//            System.out.println(getValue(s));
-//            score = score + getValue(s);
-//        }
-//
-//        return score;
-//    }
-
 
     public int score() {
         ArrayList<String> convertedList = new ArrayList<>();
@@ -59,28 +45,54 @@ public class Scrabble {
 
 
         // check for paired brackets
-        boolean invalidMultipliers = containsValidMultipliers(word);
-        System.out.println("Invalid multipliers:" + invalidMultipliers);
-        if (invalidMultipliers) return 0;
+        boolean hasValidMultipliers = containsValidMultipliers(word);
+        System.out.println("has valid multipliers:" + hasValidMultipliers);
+        if (!hasValidMultipliers) return 0;
 
         return calculateScoreRecursion(convertedList, 1, 0);
     }
 
 
-    public boolean CheckFrontbackPair(String word){
-        char first_c = word.charAt(0);
+    public boolean CheckFrontbackPair(String word, int depth){
+        char first_c = word.charAt(depth);
         if (first_c == '{'){
-            char third_char = word.charAt(2);
+
+            // 3{d}og
+            char third_char = word.charAt(depth+2);
             if (third_char == '}'){
                 return false;
             }
-            char last_char = word.charAt(word.length()-1);
-            char last_char_pair = word.charAt(word.length()-3);
 
-            if (last_char == '}' && last_char_pair != '{'){
+            // {do{g}
+            char last_char = word.charAt(word.length()-depth-1);
+            char last_char_pair = word.charAt(word.length()-depth-3);
+            if (last_char == '}'){
+                if (last_char_pair == '{'){
+                    return false;
+                }
+                // first = {, last = }. Neither have another pair.
                 return true;
             }
-            return false;
+        }
+
+        if (first_c == '['){
+
+            // 3{d}og
+            char third_char = word.charAt(depth+2);
+            if (third_char == ']'){
+                return false;
+            }
+
+            // {do{g}
+            char last_char = word.charAt(word.length()-depth-1);
+            char last_char_pair = word.charAt(word.length()-depth-3);
+            if (last_char == ']'){
+                if (last_char_pair == '['){
+                    return false;
+                }
+                // first = [, last = ]. Neither have another pair.
+                return true;
+            }
         }
 
      return false;
@@ -89,85 +101,85 @@ public class Scrabble {
     public boolean containsValidMultipliers(String word) {
         try{
 
-            boolean is_paired_front_back = false;
-            System.out.println("Hei");
+            int depthOfNestedMultiplication = 0;
+            boolean is_paired_front_back = CheckFrontbackPair(word, 0);
+
+            if (is_paired_front_back){
+                depthOfNestedMultiplication++;
+                StringBuilder sb = new StringBuilder();
+                CharSequence sub = word.subSequence(1, word.length()-1);
+                sb.append(sub);
+                String nestedString = sb.toString();
+                boolean checkFrontBackAgain = CheckFrontbackPair(nestedString, 0);
+                if (checkFrontBackAgain){
+                    depthOfNestedMultiplication++;
+                }
+            }
+
+            System.out.println("The depth of nests = " + depthOfNestedMultiplication);
+
+            System.out.println("Front-to-back-pair: " + is_paired_front_back);
+
+
+            // {d}og
             char first_c = word.charAt(0);
-
-
-            if (first_c == '{' || first_c == '[') {
-                //should be third or last.
-                char third_c = word.charAt(2);
-
-
-                char last_c = word.charAt(word.length() - 1);
-
-                if (third_c == last_c && first_c == last_c) {
-                    System.out.println("third == last");
-                    return true;
+            char third_c = word.charAt(2);
+            if (first_c == '{' && !is_paired_front_back){
+                if (third_c != '}' ){
+                    return false;
                 }
-
-                if (first_c != third_c){
-                    if (first_c != last_c){
-                        System.out.println("Neither first or last is " + first_c);
-                        return true;
-                    }
-                }
-
-                if (first_c == last_c){
-                    is_paired_front_back = true;
+            }
+            //[d]og
+            if (first_c == '[' && !is_paired_front_back){
+                if (third_c != ']'){
+                    return false;
                 }
             }
 
+            int iterStart = depthOfNestedMultiplication;
+            int iterEnd = word.length()-depthOfNestedMultiplication;
+            if (is_paired_front_back) {
+                iterStart++;
+                iterEnd--;
+            }
 
-
-
-            else if (first_c == '}' || first_c == ']') return true;
-            int iterlength = word.length()-1;
-            if(is_paired_front_back) iterlength--;
-            for (int i = 1; i < iterlength; i++){
+            for (int i = iterStart; i < iterEnd ; i++) {
                 char c = word.charAt(i);
-                System.out.println("Checking " + c);
                 if (c == '{'){
-                    System.out.println("Found {");
-                    char next_semibrack = word.charAt(i+2);
-                    System.out.println("Next char " + next_semibrack);
-                    if (next_semibrack != '}'){
-                        System.out.println("Didn't find pairing }");
-                        return true;
+                   char nextsemi = word.charAt(i+2);
+                   if (nextsemi != '}'){
+                       return false;
+                   }
+                }
+
+                if (c == '['){
+                    char nextBrack = word.charAt(i+2);
+                    if (nextBrack != ']'){
+                        return false;
                     }
                 }
-                else if (c == '[') {
-                    System.out.println("Found [");
-                    char next_brack = word.charAt(i + 2);
-                    if (next_brack != ']') {
-                        System.out.println("Didn't find pairing ]");
-                        return true;
-                    }
-                }
-                else if (c == '}'){
-                    System.out.println("Found }");
-                    char prev_semibrack = word.charAt(i-2);
-                    if (prev_semibrack != '{'){
-                        return true;
-                    }
-                }
-                else if (c == ']'){
-                        System.out.println("Found ]");
-                    char prev_brack = word.charAt(i-2);
-                    if(prev_brack != '['){
-                        return true;
+                if (c == '}'){
+                    char prevsemi = word.charAt(i-2);
+                    if (prevsemi != '{'){
+                        return false;
                     }
                 }
 
+                if (c == ']'){
+                    char prevbrack = word.charAt(i-2);
+                    if (prevbrack != '['){
+                        return false;
+                    }
 
-
+                }
             }
 
-            return false;
+            return true;
+
 
         } catch (Exception e){
             System.out.println(e);
-            return true;
+            return false;
         }
     }
 
