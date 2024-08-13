@@ -1,5 +1,7 @@
 package com.booleanuk;
 
+import javax.lang.model.type.ArrayType;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Scrabble {
@@ -10,19 +12,63 @@ public class Scrabble {
         this.word = word;
     }
 
-    public int score() {
-        int score = 0;
+//    public int score() {
+//        int score = 0;
+//
+//        for(int i = 0; i < word.length(); i++){
+//            char c = word.charAt(i);
+//            String s = String.valueOf(c);
+//            System.out.println(s.toUpperCase());
+//            System.out.println(getValue(s));
+//            score = score + getValue(s);
+//        }
+//
+//        return score;
+//    }
 
-        for(int i = 0; i < word.length(); i++){
+
+    public int score() {
+        ArrayList<String> convertedList = new ArrayList<>();
+        for (int i = 0; i < word.length(); i++) {
             char c = word.charAt(i);
             String s = String.valueOf(c);
-            System.out.println(s.toUpperCase());
-            System.out.println(getValue(s));
-            score = score + getValue(s);
+
+
+            int score = getValue(s);
+            if (score != 0){
+                convertedList.add(String.valueOf(score));
+            }
+            else {
+                convertedList.add(s);
+            }
         }
 
-        return score;
+        return calculateScoreRecursion(convertedList, 1, 0);
     }
+
+    public int calculateScoreRecursion(ArrayList<String> word, int multiplier, int sum){
+        if (word.size() == 0){
+            return sum;
+        }
+        String firstChar = word.removeFirst();
+        switch (firstChar){
+            case "{":
+                return calculateScoreRecursion(word, multiplier*2, sum);
+            case "}":
+                return calculateScoreRecursion(word, multiplier/2, sum);
+            case "[":
+                return calculateScoreRecursion(word, multiplier * 3, sum);
+            case "]":
+                return calculateScoreRecursion(word, multiplier/3, sum);
+            default:
+                int value = Integer.valueOf(firstChar);
+                value = value * multiplier;
+                int newSum = sum + value;
+                return calculateScoreRecursion(word, multiplier, newSum);
+        }
+    }
+
+
 
     public int getValue(String c){
         int letterValue;
